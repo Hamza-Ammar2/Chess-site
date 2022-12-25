@@ -1,0 +1,38 @@
+extends layout 
+
+block content
+    div(id="cont" class="d-flex flex-row" style="gap: 10px; justify-content: center; align-items: center;")
+      div(class="rounded d-flex flex-column" style="color: white; background-color: rgba(0, 0, 0, 0.705); align-items: center; padding: 10px")
+        h4(id="t1" style="display: none;")
+        canvas(style="border: 1px solid black; display: none;" data-user= user !== null ? JSON.stringify(user) : "null")
+        h4(id="t2" style="display: none;")
+        div(id="waiting" class="d-flex flex-column rounded" style="align-items: center; justify-content: center; border: 1px solid black; width: 500px; height: 500px;")
+            h2 Searching for players
+      div(class="rounded" style="background-color: rgba(0, 0, 0, 0.705); height: 100%; padding: 10px;")
+        button(id="accept-draw" class="btn btn-primary mb-3" style="display: none; background-color: black; border: none;") Accept draw
+        p(id="declined-draw" style="display: none;") Opponent declined draw
+        button(id="draw" class="btn btn-primary mb-3" style="display: none; background-color: black; border: none;") Offer Draw
+        button(id="resign" class="btn btn-primary mb-3" style="display: none; background-color: black; border: none;") Resign
+        div(id="opts" style="display: none; width: 100%; justify-content: center; align-items: center; gap: 5px;" class="d-flex flex-row")
+          button(id="left" class="btn btn-primary" style="display: none; background-color: black; border: none;") &#8592
+          button(id="right" class="btn btn-primary" style="display: none; background-color: black; border: none;") &#8594
+      div(id="end" class="rounded d-flex flex-column endBox" style="z-index: -1; justify-content: center; align-items: center;")
+        div(style="display: none; width: 100%;" class="d-flex flex-row")
+          div
+          button(id="close" class="btn-close" style="display: none;")
+        h4(style="display: none;") 
+        form(action=`/${mode}/${ranked ? "ranked" : "guest"}` method='GET' style="display: none;")
+          button(type="submit" class="btn btn-primary" style="display: none; background-color: green; border: none;")= "Next Game " + mode
+
+    script(src="/socket.io/socket.io.js")
+    script. 
+      const canvas = document.querySelector("canvas");
+      const ctx = canvas.getContext('2d');
+      canvas.width = 500;
+      canvas.height = 500;
+    script(src="/javascripts/legalmoves.js")
+    script(src="/javascripts/piece.js")
+    script(src="/javascripts/promote.js")
+    script(src="/javascripts/box.js")
+    script(src="/javascripts/board.js")
+    script(src="/javascripts/match.js")

@@ -1,0 +1,48 @@
+extends layout
+
+block content 
+  div(class="d-flex flex-row" style="gap: 30px; justify-content: center; align-items: center; width: 100%; height: 100%;")
+    div(class="d-flex flex-column")
+      h4(style="color: white;") Play locally or online
+      div(class="rounded" style="height: auto; background-color: rgba(0, 0, 0, 0.705); padding: 10px;")
+        form(action="/sign-up" method='GET' class="form mb-3")
+          button(type="submit" class="btn btn-primary" style="border: none; background-color: green; width: 100%; font-size: 1.5rem;") Sign Up
+        form(action="/all-matches" method='GET' class="mb-3")
+          button(class="btn btn-primary" type="submit" style="border: none; background-color: green; width: 100%; font-size: 1.5rem;") Analyze other people's games
+        form(action="/local" method='GET')
+          button(type="submit" class="btn btn-primary" style="border: none; background-color: green; width: 100%; font-size: 1.5rem;") Play Locally With Friends
+    div(class="d-flex flex-column")
+      h4(style="color: white;") Play against Players from all around the World!
+      
+      div(class="d-flex flex-column rounded" style="background-color: black; padding: 10px;")
+        p(style="color: white") Play ranked
+        div(class="rounded d-flex flex-row" style="gap: 10px; height: 7rem; background-color: rgba(0, 0, 0, 0.705);")
+          form(style="width: calc(100%/3);" action="/bullet/ranked" method='GET')
+            button(type="submit" class="btn btn-primary" style="height: 100%; border: none; background-color: green; width: 100%; font-size: 1.5rem;") Bullet 1  
+          form(style="width: calc(100%/3);" action="/blitz/ranked" method='GET')
+            button(class="btn btn-primary" type="submit" style="height: 100%; border: none; background-color: green; width: 100%; font-size: 1.5rem;") Blitz 3
+          form(style="width: calc(100%/3);" action="/rapid/ranked" method='GET')
+            button(type="submit" class="btn btn-primary" style="height: 100%; border: none; background-color: green; width: 100%; font-size: 1.5rem;") Rapid 10
+        p(style="color: white") Play Anonymously 
+        div(class="rounded d-flex flex-row" style="gap: 10px; height: 7rem; background-color: rgba(0, 0, 0, 0.705);")
+          form(style="width: calc(100%/3);" action="/bullet/guest" method='GET')
+            button(type="submit" class="btn btn-primary" style="height: 100%; border: none; background-color: green; width: 100%; font-size: 1.5rem;") Bullet 1  
+          form(style="width: calc(100%/3);" action="/blitz/guest" method='GET')
+            button(class="btn btn-primary" type="submit" style="height: 100%; border: none; background-color: green; width: 100%; font-size: 1.5rem;") Blitz 3
+          form(style="width: calc(100%/3);" action="/rapid/guest" method='GET')
+            button(type="submit" class="btn btn-primary" style="height: 100%; border: none; background-color: green; width: 100%; font-size: 1.5rem;") Rapid 10
+    
+    div(class="d-flex flex-column" style="overflow: auto; border-top: 1px solid white; color: white; border-bottom: 1px solid white; color: white; flex: 1; height: 100%; align-items: center;")
+      h2 Leaderboard
+      for player in users
+        div(class="d-flex flex-row" style="justify-content: center; align-items: center; width: 100%; border-top: 1px solid white;")
+          p(style="margin-left: 10px; text-align: left;")
+            a(href=`/users/${player._id}` style="color: inherit; text-decoration: none;")= player.username 
+          div(style="flex: 1;")
+          p(style="margin-right: 10px;")= "Rank: " + player.rank
+      div(style="width: 100%; border: 0.25px solid white;")
+
+
+
+  
+  

@@ -1,0 +1,424 @@
+#!/usr/bin/env node
+
+
+/**
+ * Module dependencies.
+ */
+
+var app = require('../app');
+var User = require('../models/users');
+var Match = require('../models/match');
+var async = require('async');
+var debug = require('debug')('chessy:server');
+var http = require('http');
+
+/**
+ * Get port from environment and store in Express.
+ */
+
+var port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
+/**
+ * Create HTTP server.
+ */
+
+var server = http.createServer(app);
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
+
+// SOCKET IO STUFF
+var io = require('socket.io')(server);
+let timers = {};
+
+
+io.on('connection', socket => {
+
+  socket.on('set-user', user => socket.user = user);
+
+
+  socket.on('make-match', async (mode) => {
+    let matches = await Match.find({mode: mode, player2: ""});
+    if (matches.length === 0) {
+      let newMatch = new Match({
+        player1: socket.user ? socket.user.username : "Anonymous",
+        player2: "",
+        ranked: socket.user ? true : false,
+        mode: mode
+      });
+
+      newMatch.save((err, result) => {
+        if (err) {return console.log(err + "");}
+        socket.join(result._id.toString());
+        socket.match = result._id.toString();
+        socket.isblack = false;
+        socket.emit('isblack', false);
+      });
+      return;
+    }
+
+    Match.findByIdAndUpdate(matches[0]._id, {player2: socket.user ? socket.user.username : "Anonymous"}).exec((err, result) => {
+      if (err) {return console.log(err + "");}
+      socket.join(result._id.toString());
+      socket.match = result._id.toString();
+      socket.isblack = true;
+      socket.emit('isblack', true);
+      io.to(result._id.toString()).emit('match-found', {player1: result.player1, player2: socket.user ? socket.user.username : "Anonymous"});
+      let matchID = result._id.toString();
+      timers[result._id.toString()] = {
+        whiteTime: mode === 'bullet' ? 1*60 : mode === 'blitz' ? 3 * 60 : mode === 'rapid' ? 10 * 60 : 0,
+        blackTime: mode === 'bullet' ? 1*60 : mode === 'blitz' ? 3 * 60 : mode === 'rapid' ? 10 * 60 : 0,
+        turn: false,
+        timer: setInterval(() => {
+          if (timers[matchID].turn === false) {
+            timers[matchID].whiteTime -= 1;
+          } else {
+            timers[matchID].blackTime -= 1;
+          }
+
+          io.to(matchID).emit('time', {whiteTime: timers[matchID].whiteTime, blackTime: timers[matchID].blackTime});
+
+          if (timers[matchID].whiteTime === 0) {
+            io.to(matchID).emit('white-timeout');
+            
+            Match.findByIdAndUpdate(result._id, {winner: result.player2, winningMethod: "timeout"}).exec((err, resu) => {
+              if (err) {return console.log(err + "")}
+            });
+
+            clearInterval(timers[matchID].timer);
+          }
+
+          if (timers[matchID].blackTime === 0) {
+            io.to(matchID).emit('black-timeout');
+            
+            Match.findByIdAndUpdate(result._id, {winner: result.player1, winningMethod: "timeout"}).exec((err, resu) => {
+              if (err) {return console.log(err + "")}
+            });
+            clearInterval(timers[matchID].timer);
+          }
+        }, 1000)
+      }; 
+    });
+ 
+    
+  });
+
+
+  socket.on('white-timeout', positions => {
+    Match.findByIdAndUpdate(socket.match, {positions}).exec((err, result) => {
+      if (err) {return console.log(err + "");}
+      if (socket.user) {
+        async.parallel({
+          player1(callback) {
+            User.findOneAndUpdate({username: result.player1}, {$push: {'matches': result}, $inc: {rank: -1}}).exec(callback)
+          },
+          player2(callback) {
+            User.findOneAndUpdate({username: result.player2}, {$push: {'matches': result}, $inc: {rank: 1}}).exec(callback)
+          }
+        }, (err, resu) => {if (err) return console.log(err + "");});
+      }
+    });
+  });
+
+
+
+  socket.on('black-timeout', positions => {
+    Match.findByIdAndUpdate(socket.match, {positions}).exec((err, result) => {
+      if (err) {return console.log(err + "");}
+      if (socket.user) {
+        async.parallel({
+          player1(callback) {
+            User.findOneAndUpdate({username: result.player1}, {$push: {'matches': result}, $inc: {rank: 1}}).exec(callback)
+          },
+          player2(callback) {
+            User.findOneAndUpdate({username: result.player2}, {$push: {'matches': result}, $inc: {rank: -1}}).exec(callback)
+          }
+        }, (err, resu) => {if (err) return console.log(err + "");});
+      }
+    });
+  });
+
+
+  socket.on('white-abandoned', positions => {
+    Match.findByIdAndUpdate(socket.match, {positions}).exec((err, result) => {
+      if (err) {return console.log(err + "");}
+      if (socket.user) {
+        async.parallel({
+          player1(callback) {
+            User.findOneAndUpdate({username: result.player1}, {$push: {'matches': result}, $inc: {rank: -1}}).exec(callback)
+          },
+          player2(callback) {
+            User.findOneAndUpdate({username: result.player2}, {$push: {'matches': result}, $inc: {rank: 1}}).exec(callback)
+          }
+        }, (err, resu) => {if (err) return console.log(err + "");});
+      }
+    });
+  });
+
+
+  socket.on('black-abandoned', positions => {
+    Match.findByIdAndUpdate(socket.match, {positions}).exec((err, result) => {
+      if (err) {return console.log(err + "");}
+      if (socket.user) {
+        async.parallel({
+          player1(callback) {
+            User.findOneAndUpdate({username: result.player1}, {$push: {'matches': result}, $inc: {rank: 1}}).exec(callback)
+          },
+          player2(callback) {
+            User.findOneAndUpdate({username: result.player2}, {$push: {'matches': result}, $inc: {rank: -1}}).exec(callback)
+          }
+        }, (err, resu) => {if (err) return console.log(err + "");});
+      }
+    });
+  });
+
+
+  socket.on('white-move', (move) => {
+    timers[socket.match].turn = !timers[socket.match].turn;
+    socket.to(socket.match).emit('move', move);
+  });
+
+
+  socket.on('black-move', (move) => {
+    timers[socket.match].turn = !timers[socket.match].turn;
+    socket.to(socket.match).emit('move', move);
+  });
+
+
+  socket.on('offer-draw', () => {
+    socket.to(socket.match).emit('offer-draw');
+  });
+
+  socket.on('accept-draw', (positions) => {
+    clearInterval(timers[socket.match].timer);
+    socket.to(socket.match).emit('accept-draw');
+    Match.findByIdAndUpdate(socket.match, {draw: true, positions}).exec((err, result) => {
+      if (err) {return console.log(err + "");}
+      if (socket.user) {
+        async.parallel({
+          player1(callback) {
+            User.findOneAndUpdate({username: result.player1}, {$push: {'matches': result}}).exec(callback)
+          },
+          player2(callback) {
+            User.findOneAndUpdate({username: result.player2}, {$push: {'matches': result}}).exec(callback)
+          }
+        }, (err, resu) => {if (err) return console.log(err + "");});
+      }
+    });
+  });
+
+
+  socket.on('decline-draw', () => {
+    socket.to(socket.match).emit('decline-draw');
+  });
+
+
+  socket.on('white-wins', (positions) => {
+    clearInterval(timers[socket.match].timer);
+    Match.findById(socket.match).exec((err, result) => {
+      if (err) {return console.log(err + "");}
+
+      Match.findByIdAndUpdate(result._id, {winner: result.player1, winningMethod: "checkmate", positions}).exec((err, result) => {
+        if (err) {return console.log(err + "");}
+
+        socket.to(socket.match).emit('white-wins');
+        if (socket.user) {
+          async.parallel({
+            player1(callback) {
+              User.findOneAndUpdate({username: result.player1}, {$push: {'matches': result}, $inc: {rank: 1}}).exec(callback)
+            },
+            player2(callback) {
+              User.findOneAndUpdate({username: result.player2}, {$push: {'matches': result}, $inc: {rank: -1}}).exec(callback)
+            }
+          }, (err, resu) => {if (err) return console.log(err + "");});
+        }
+      });
+    });
+  });
+
+
+  socket.on('black-wins', (positions) => {
+    clearInterval(timers[socket.match].timer);
+    Match.findById(socket.match).exec((err, result) => {
+      if (err) {return console.log(err + "");}
+
+      Match.findByIdAndUpdate(result._id, {winner: result.player2, winningMethod: "checkmate", positions}).exec((err, result) => {
+        if (err) {return console.log(err + "");}
+
+        socket.to(socket.match).emit('black-wins');
+        if (socket.user) {
+          async.parallel({
+            player1(callback) {
+              User.findOneAndUpdate({username: result.player1}, {$push: {'matches': result}, $inc: {rank: -1}}).exec(callback)
+            },
+            player2(callback) {
+              User.findOneAndUpdate({username: result.player2}, {$push: {'matches': result}, $inc: {rank: 1}}).exec(callback)
+            }
+          }, (err, resu) => {if (err) return console.log(err + "");});
+        }
+      });
+    });
+  });
+
+
+  socket.on('resign-white', (positions) => {
+    clearInterval(timers[socket.match].timer);
+    Match.findById(socket.match).exec((err, result) => {
+      if (err) {return console.log(err + "");}
+
+      Match.findByIdAndUpdate(result._id, {winner: result.player1, winningMethod: "resignation", positions}).exec((err, result) => {
+        if (err) {return console.log(err + "");}
+
+        socket.to(socket.match).emit('resign-white');
+        if (socket.user) {
+          async.parallel({
+            player1(callback) {
+              User.findOneAndUpdate({username: result.player1}, {$push: {'matches': result}, $inc: {rank: -1}}).exec(callback)
+            },
+            player2(callback) {
+              User.findOneAndUpdate({username: result.player2}, {$push: {'matches': result}, $inc: {rank: 1}}).exec(callback)
+            }
+          }, (err, resu) => {if (err) return console.log(err + "");});
+        }
+      });
+    });
+  });
+
+
+  socket.on('resign-black', (positions) => {
+    clearInterval(timers[socket.match].timer);
+    Match.findById(socket.match).exec((err, result) => {
+      if (err) {return console.log(err + "");}
+
+      Match.findByIdAndUpdate(result._id, {winner: result.player2, winningMethod: "resignation", positions}).exec((err, result) => {
+        if (err) {return console.log(err + "");}
+
+        socket.to(socket.match).emit('resign-black');
+        if (socket.user) {
+          async.parallel({
+            player1(callback) {
+              User.findOneAndUpdate({username: result.player1}, {$push: {'matches': result}, $inc: {rank: 1}}).exec(callback)
+            },
+            player2(callback) {
+              User.findOneAndUpdate({username: result.player2}, {$push: {'matches': result}, $inc: {rank: -1}}).exec(callback)
+            }
+          }, (err, resu) => {if (err) return console.log(err + "");});
+        }
+      });
+    });
+  });
+
+
+
+  socket.on('disconnect', () => {
+    console.log(socket.match);
+    Match.findById(socket.match).exec((err, result) => {
+      if (err) {return console.log(err + "");}
+      
+      if (!result) return;
+      if (result.ranked) {
+          if (result.player2 === "") {
+            Match.findByIdAndDelete(result._id).exec(err => {
+              if (err) {return console.log(err + "");}
+            });
+
+            return;
+          }
+
+          if (result.winner === "" && result.draw === false) {
+            clearInterval(timers[socket.match].timer);
+            Match.findByIdAndUpdate(result._id, {winner: socket.isblack ? result.player1 : result.player2}).exec((err, resu) => {
+              if (err) {return console.log(err + "");}
+
+              socket.isblack ? socket.to(socket.match).emit('black-abandoned') : socket.to(socket.match).emit('white-abandoned');
+            });
+          }
+      } else {
+          if (result.player2 === "") {
+            Match.findByIdAndDelete(result._id).exec(err => {
+              if (err) {return console.log(err + "");}
+            });
+
+            return;
+          }
+
+          //if (result.winner === "") {
+          //  io.to(result._id.toString()).emit('winner', "Winner by Game Abandonment");
+          //} else {
+            Match.findByIdAndDelete(result._id).exec(err => {
+              if (err) {return console.log(err + "");}
+            });
+          //}
+      }
+    });
+  });
+});
+
+
+
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}

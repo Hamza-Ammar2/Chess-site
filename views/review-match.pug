@@ -1,0 +1,24 @@
+extends layout 
+
+block content
+    div(class="d-flex flex-row" style="gap: 10px; justify-content: center; align-items: center;")
+        div(class="rounded d-flex flex-column" style="color: white; background-color: rgba(0, 0, 0, 0.705); align-items: center; padding: 10px")
+            h4(id="t1")
+            canvas(style="border: 1px solid black;" data-match=JSON.stringify(match)) 
+            h4(id="t2")
+        div(class="card rounded" style="background-color: rgba(0, 0, 0, 0.705); height: 100%; padding: 10px;")
+            button(id="flip" class="btn btn-primary" style="background-color: green; border: none;") Flip board
+            div(class="d-flex flex-row")
+                button(id="left" class="btn btn-primary" style="background-color: black; border: none;") &#8592
+                button(id="right" class="btn btn-primary" style="background-color: black; border: none;") &#8594
+    script. 
+      const canvas = document.querySelector("canvas");
+      const ctx = canvas.getContext('2d');
+      canvas.width = 500;
+      canvas.height = 500;
+    script(src="/javascripts/legalmoves.js")
+    script(src="/javascripts/piece.js")
+    script(src="/javascripts/promote.js")
+    script(src="/javascripts/box.js")
+    script(src="/javascripts/board.js")
+    script(src="/javascripts/review-match.js")
