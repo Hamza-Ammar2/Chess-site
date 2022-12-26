@@ -103,7 +103,7 @@ socket.on('time', time => {
         let secs = 0;
         if (/[.]/.test(String(mins))) {
             mins = Number(String(mins).split(".")[0]);
-            secs = time - mins;
+            secs = time - mins*60;
         }
         mins = String(mins).length > 1 ? String(mins) : "0" + String(mins);
         secs = String(secs).length > 1 ? String(secs) : "0" + String(secs);

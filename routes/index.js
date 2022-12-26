@@ -62,4 +62,25 @@ router.get('/matches/:id', (req, res, next) => {
 });
 
 
+router.get('/:id', (req, res, next) => {
+  User.findById(req.params.id).populate('matches').exec((err, result) => {
+    if (err) {return next(err);}
+    let wins = 0;
+    let losses = 0;
+    let draws = 0;
+
+    result.matches.forEach(match => {
+      if (match.winner === result.username) {
+        wins++;
+      } else if (match.draw) {
+        draws++;
+      } else losses++;
+    });
+
+
+    res.render("user", {title: result.username, user: req.user ? req.user : null, person: result, losses, wins, draws});
+  });
+});
+
+
 module.exports = router;
