@@ -10,8 +10,8 @@ block content
         div(class="rounded settings" style="background-color: rgba(0, 0, 0, 0.705); height: 100%; padding: 10px;")
             button(id="flip" class="btn btn-primary" style="background-color: green; border: none;") Flip board
             div(class="d-flex flex-row" style="gap: 5px; justify-content: center; align-items: center;")
-              button(id="left" class="btn btn-primary" style="background-color: black; border: none;") &#8592
-              button(id="right" class="btn btn-primary" style="background-color: black; border: none;") &#8594
+                button(id="left" class="btn btn-primary" style="background-color: black; border: none;") &#8592
+                button(id="right" class="btn btn-primary" style="background-color: black; border: none;") &#8594
     div(id="end" class="rounded d-flex flex-column endBox" style="z-index: -1; justify-content: center; align-items: center;")
         div(style="width: 100%; display: none;" class="d-flex flex-row")
           div 
@@ -23,9 +23,12 @@ block content
       const ctx = canvas.getContext('2d');
       canvas.width = 400;
       canvas.height = 400;
+    
+    script(src="/javascripts/ai.js")
+    script(src="/javascripts/brain.js")
     script(src="/javascripts/legalmoves.js")
     script(src="/javascripts/piece.js")
     script(src="/javascripts/promote.js")
     script(src="/javascripts/box.js")
     script(src="/javascripts/board.js")
-    script(src="/javascripts/local.js")
+    script(src="/javascripts/ai-control.js")

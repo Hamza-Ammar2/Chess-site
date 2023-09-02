@@ -1,12 +1,13 @@
 extends layout 
 
 block content 
+    link(rel="stylesheet" href="/stylesheets/all-matches.css")
     div(class="d-flex flex-column" style="color: white; align-items: center; width: 100%; height: 100%;")
         if matches.length === 0
             h1 No matches
         for match in matches 
-            div(class="rounded d-flex flex-row mb-3" style="width: 80%; padding: 10px; background-color: black; height: auto; align-items: center; justify-content: center; height: auto;")
-                div(class="d-flex flex-column" style="height: 100%; justify-content: center; gap: 20px;")
+            div(class="rounded mb-3 match")
+                div(class="match-info" style="height: 100%; justify-content: center; gap: 20px;")
                     h3= match.player1 + " vs " + match.player2 
                     h4= match.mode
                     if match.draw 

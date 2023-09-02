@@ -1,11 +1,14 @@
 body {
-  padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+  font-size: medium;
 }
 
 html {
@@ -42,4 +45,13 @@ body {
   background-image: url('images/board.jpg');
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+
+nav {
+  padding: 20px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }

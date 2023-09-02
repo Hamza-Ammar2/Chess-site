@@ -1,0 +1,26 @@
+@media (width <= 650px) {
+    .cont {
+        flex-direction: column !important;
+        width: auto !important;
+    }
+    .settings {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        height: min-content !important;
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+    .settings * {
+        height: min-content;
+    }
+}
+
+@media (width <= 420px) {
+    canvas {
+        width: 100%;
+    }
+    .cont {
+        width: 90% !important;
+    }
+}

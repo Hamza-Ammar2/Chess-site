@@ -1,0 +1,14 @@
+.big-cont {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 80%;
+}
+
+.cont {
+    background-color: rgb(46, 42, 42);
+    color: whitesmoke;
+    display: flex;
+    border-radius: 10px;
+    padding: 10px;
+}

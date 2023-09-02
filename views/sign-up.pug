@@ -1,7 +1,8 @@
 extends layout 
 
 block content 
-     div(class="rounded" style="margin: auto auto; background-color: green; padding: 10px; color: white; width: 40rem;")
+     link(rel="stylesheet", href="/stylesheets/forms.css")
+     div(class="rounded cont" style="margin: auto auto; background-color: green; padding: 10px; color: white; width: 40rem;")
         form(action="/sign-up" method='POST')
             div(class="mb-3")
                 label(for="username" class="form-label") Username

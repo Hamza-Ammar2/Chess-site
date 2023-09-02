@@ -1,12 +1,13 @@
 extends layout 
 
 block content
-    div(class="d-flex flex-row" style="gap: 10px; justify-content: center; align-items: center;")
-        div(class="rounded d-flex flex-column" style="color: white; background-color: rgba(0, 0, 0, 0.705); align-items: center; padding: 10px")
+    link(rel="stylesheet" href="/stylesheets/match.css")
+    div(class="d-flex flex-row cont" style="gap: 10px; justify-content: center; width: 100%")
+        div(class="rounded d-flex flex-column card" style="color: white; background-color: rgba(0, 0, 0, 0.705); align-items: center; padding: 10px")
             h4(id="t1")
             canvas(style="border: 1px solid black;" data-match=JSON.stringify(match)) 
             h4(id="t2")
-        div(class="card rounded" style="background-color: rgba(0, 0, 0, 0.705); height: 100%; padding: 10px;")
+        div(class="rounded settings" style="background-color: rgba(0, 0, 0, 0.705); height: 100%; padding: 10px;")
             button(id="flip" class="btn btn-primary" style="background-color: green; border: none;") Flip board
             div(class="d-flex flex-row")
                 button(id="left" class="btn btn-primary" style="background-color: black; border: none;") &#8592
@@ -14,8 +15,8 @@ block content
     script. 
       const canvas = document.querySelector("canvas");
       const ctx = canvas.getContext('2d');
-      canvas.width = 500;
-      canvas.height = 500;
+      canvas.width = 450;
+      canvas.height = 450;
     script(src="/javascripts/legalmoves.js")
     script(src="/javascripts/piece.js")
     script(src="/javascripts/promote.js")

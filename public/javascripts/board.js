@@ -508,6 +508,15 @@ class Board {
         } else this.currentPosIndex = i;
     }
 
+    getIFI(id) {
+        let index;
+        this.pieces.forEach((piece, i) => {
+            if (piece.id === id && !piece.dead) return index = i;
+        });
+        if (!index) console.log("shit");
+        return index;
+    }
+
 
     checkPieces(pos) {
         if (this.promoting) return;
@@ -530,16 +539,28 @@ class Board {
         return piecefound;
     }
 
-    checkBoxes(pos, cb, cb2) {
+    getCastleStatus() {
+        let castle = {white: {}, black: {}};
+        castle.black.l = this.blackCastleL;
+        castle.black.r = this.blackCastleR;
+        castle.white.l = this.whiteCastleL;
+        castle.white.r = this.whiteCastleR;
+
+        //console.log(castle)
+        return castle;
+    }
+
+    checkBoxes(pos, cb, cb2, id) {
         let dropped = false;
         this.boxes.forEach(row => {
             row.forEach(bxx => {
                 if (this.end) return;
+                
                 if (this.held_piece_index === null) return;
-                if (this.pieces[this.held_piece_index].dead) return;
+                if (this.pieces[this.held_piece_index].dead) return;          
                 if (this.held_piece_index === null) return console.log("something weird");
                 if (this.pieces[this.held_piece_index].isblack !== this.turn) return;
-
+                
                 if (bxx.isTarget(pos)) {
                     let by = 8 - Number(bxx.id[0]);
                     let bx = 8 - Number(bxx.id[1]);
@@ -557,9 +578,10 @@ class Board {
                         }
                     }
 
-
+                    
                     if (this.pieces[this.held_piece_index].isLegal(box.id) === false) return;
                     
+
                     let values = this.pieces[this.held_piece_index].id.split("");
                     let y = Number(values[0]) - 1;
                     let x = Number(values[1]) - 1;
@@ -661,7 +683,9 @@ class Board {
                         dropped = true;
 
                         this.turn = !this.turn;
+                        
                     } else {
+                        console.log("huh");
                         this.boxes[y][x].piece = this.pieces[this.held_piece_index].type;
                         box.piece = box.cap;
                         if (this.pieces[this.held_piece_index].type === "P") {

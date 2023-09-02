@@ -1,14 +1,15 @@
 extends layout 
 
 block content
-    div(id="cont" class="d-flex flex-row" style="gap: 10px; justify-content: center; align-items: center;")
-      div(class="rounded d-flex flex-column" style="color: white; background-color: rgba(0, 0, 0, 0.705); align-items: center; padding: 10px")
+    link(rel="stylesheet" href="/stylesheets/match.css")
+    div(id="cont" class="d-flex flex-row cont" style="gap: 10px; justify-content: center; width: 100%")
+      div(class="rounded d-flex flex-column card" style="color: white; background-color: rgba(0, 0, 0, 0.705); align-items: center; padding: 10px")
         h4(id="t1" style="display: none;")
         canvas(style="border: 1px solid black; display: none;" data-user= user !== null ? JSON.stringify(user) : "null")
         h4(id="t2" style="display: none;")
         div(id="waiting" class="d-flex flex-column rounded" style="align-items: center; justify-content: center; border: 1px solid black; width: 500px; height: 500px;")
             h2 Searching for players
-      div(class="rounded" style="background-color: rgba(0, 0, 0, 0.705); height: 100%; padding: 10px;")
+      div(class="rounded settings" style="background-color: rgba(0, 0, 0, 0.705); height: 100%; padding: 10px;")
         button(id="accept-draw" class="btn btn-primary mb-3" style="display: none; background-color: black; border: none;") Accept draw
         p(id="declined-draw" style="display: none;") Opponent declined draw
         button(id="draw" class="btn btn-primary mb-3" style="display: none; background-color: black; border: none;") Offer Draw
@@ -28,8 +29,8 @@ block content
     script. 
       const canvas = document.querySelector("canvas");
       const ctx = canvas.getContext('2d');
-      canvas.width = 500;
-      canvas.height = 500;
+      canvas.width = 400;
+      canvas.height = 400;
     script(src="/javascripts/legalmoves.js")
     script(src="/javascripts/piece.js")
     script(src="/javascripts/promote.js")

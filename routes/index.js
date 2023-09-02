@@ -5,11 +5,17 @@ const User = require('../models/users');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
+  res.render('index', { title: 'Chess', user: req.user ? req.user : null});
+});
+
+
+router.get('/leaderboard', (req, res, next) => {
   User.find().sort({rank: -1}).exec((err, result) => {
-    if (err) {return next(err);}
-    res.render('index', { title: 'Chess', user: req.user ? req.user : null, users: result });
+      if (err) {return next(err);}
+      res.render('allusers', { title: 'Leaderboard', users: result, user: req.user ? req.user : null });
   });
 });
+
 
 router.get("/all-matches", (req, res, next) => {
   Match.find().exec((err, result) => {
@@ -41,6 +47,12 @@ router.get('/log-in', (req, res, next) => {
 router.get('/local', (req, res, next) => {
   res.render("local", {title: "Local", user: req.user ? req.user : null});
 });
+
+
+router.get('/ai', (req, res, next) => {
+  res.render("ai", {title: "Computer", user: req.user ? req.user : null});
+});
+
 
 router.get('/:mode/ranked', (req, res, next) => {
   if (!req.user) {return res.redirect('/log-in')}

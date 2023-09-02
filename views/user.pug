@@ -1,20 +1,28 @@
 extends layout 
 
 block content 
+    link(rel="stylesheet" href="/stylesheets/user.css")
     div(class="d-flex flex-column" style="align-items: center; color: white; width: 100%; height: 100%;")
         div(class="d-flex flex-row" style="gap: 10px; justify-content: center; align-items: center; width: 100%; border-top: 1px solid white; border-bottom: 1px solid white;")
           h1(style="margin-left: 10px; text-align: left;")= person.username 
           div(style="flex: 1;")
-          h4= "Rank: " + person.rank
-          h4= `Wins: ${wins}`
-          h4= `Losses: ${losses}`
-          h4(style="margin-right: 10px;")= `Draws: ${draws}`
+          div(class="user-info")
+            div
+                div
+                    h4= "Rank: " + person.rank
+                div
+                    h4= `Wins: ${wins}`
+            div
+                div
+                    h4= `Losses: ${losses}`
+                div
+                    h4(style="margin-right: 10px;")= `Draws: ${draws}`
         hr
         if person.matches.length === 0
             h1 No matches
         for match in person.matches 
-            div(class="rounded d-flex flex-row mb-3" style="width: 80%; padding: 10px; background-color: black; height: auto; align-items: center; justify-content: center; height: auto;")
-                div(class="d-flex flex-column" style="height: 100%; justify-content: center; gap: 20px;")
+            div(class="rounded mb-3 match")
+                div(class="match-info")
                     h3= match.player1 + " vs " + match.player2 
                     h4= match.mode
                     if match.draw 
